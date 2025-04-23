@@ -37,26 +37,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-/* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
 uint8_t isDeviceConnected = 0;
 
 I2C_HandleTypeDef hi2c1;
@@ -125,46 +106,23 @@ uint_least32_t Crc32(unsigned char *buf, size_t len)
   */
 int main(void)
 {
-
-  /* USER CODE BEGIN 1 */
-  // MPU9250_Init(&mpu9250, MPU9250_Device_0, ACCEL_SCALE_2G, GYRO_SCALE_2000dps, MAG_SCALE_16bit);
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-  
-  
-  /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_USART2_UART_Init();
-  /* USER CODE BEGIN 2 */
+
   // QMC_init(&pusula_sensor, &hi2c2, 200);
   uint8_t i = 0;
-  result_buffer[0] = 0xAA;
-  HAL_UART_Transmit(&huart2, result_buffer, 1, 10);
   MPU9250_Init(&mpu9250, MPU9250_Device_0, ACCEL_SCALE_2G, GYRO_SCALE_2000dps, MAG_SCALE_16bit);
-  /* USER CODE END 2 */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+
   while (1)
   {
-    /* USER CODE END WHILE */
     // QMC_read(&pusula_sensor);
     MPU9250_ReadGyro(&mpu9250);
     MPU9250_ReadAcc(&mpu9250);
@@ -208,16 +166,10 @@ int main(void)
     // result_buffer[21] = crc_var.u8[2];
     // result_buffer[22] = crc_var.u8[3];
     HAL_UART_Transmit(&huart2, result_buffer, 23, 100);
-    // result_buffer[0] = 0xAA;
-    // result_buffer[0] = 0xBB;
-    // result_buffer[0] = 0xCC;
-    // HAL_I2C_Master_Transmit(&hi2c1, 0x71, result_buffer, 20, 100);
     HAL_Delay(50);
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    // HAL_Delay(500);
-    /* USER CODE BEGIN 3 */
+
   }
-  /* USER CODE END 3 */
 }
 
 void SystemClock_Config(void)
@@ -383,23 +335,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN 4 */
-HAL_StatusTypeDef whoAmI_Check(MPU9250_t *mpu9250)
-{
-	uint8_t data;
-	/* MPU9250 Who Am I Register Check */
-	if (readByte(&hi2c1, mpu9250 -> I2C_Addr, WHO_AM_I, &data) != HAL_OK)
-	{
-		if (data != 0x71)
-			return HAL_ERROR;
-	}
-	/* AK8963 Who Am I Register Check */
-	/*if (readByte(&hi2c1, mpu9250 -> I2C_Addr_Mag, WIA, &data) != HAL_OK)
-	{
-		if (data != 0x48)
-			return HAL_ERROR;
-	}*/
-	return HAL_OK;
-}
+
 /* USER CODE END 4 */
 
 /**

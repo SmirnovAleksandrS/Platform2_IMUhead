@@ -1,4 +1,3 @@
-#include "main.h"
 #include "MPU9250.h"
 
 #define PI	3.14159265359f
@@ -20,7 +19,7 @@ MPU9250_Result_t MPU9250_Init(MPU9250_t *MPU9250, MPU9250_Device_t dev, MPU9250_
 	// 	return MPU9250_RESULT_NC;
 
 	/* Who Am I Check */
-	readByte(&hi2c1, MPU9250->I2C_Addr, WHO_AM_I, &data);
+	readByte(&hi2c1, MPU9250->I2C_Addr, WHO_AM_I_MPU9250, &data);
 	if (data != 0x71)  //Originally 0x71
 		return MPU9250_RESULT_NC;
 
@@ -38,7 +37,7 @@ MPU9250_Result_t MPU9250_Init(MPU9250_t *MPU9250, MPU9250_Device_t dev, MPU9250_
 	 * @Temperature BW: 42 Hz
 	 * @Note: Sensor fusion update rate cannot be higher than (1/5.9ms) = 170 Hz
 	 */
-	writeByte(&hi2c1, MPU9250->I2C_Addr, CONFIG, 0x03);
+	writeByte(&hi2c1, MPU9250->I2C_Addr, MPU_CONFIG, 0x03);
 
 	/* Sample Rate = Fs / (1 + SMPLRT_DIV)
 	 * @Sample Rate = 1000 / (1 + 4) = 200 Hz
@@ -79,13 +78,13 @@ MPU9250_Result_t MPU9250_Init(MPU9250_t *MPU9250, MPU9250_Device_t dev, MPU9250_
 		return MPU9250_RESULT_NC;*/
 
 	/* Magnetometer Power Down */
-	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, CNTL, 0x00);
+	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x00);
 	HAL_Delay(10);
 	/* Magnetometer Fuse ROM Access Mode ON */
-	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, CNTL, 0x0F);
+	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x0F);
 	HAL_Delay(10);
 	/* Magnetometer Power Down */
-	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, CNTL, 0x00);
+	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x00);
 	HAL_Delay(10);
 	/* MODE[3:0] Operation Mode: Continuous Measurement Mode 1
 	 * @Mode Configuration
@@ -93,7 +92,7 @@ MPU9250_Result_t MPU9250_Init(MPU9250_t *MPU9250, MPU9250_Device_t dev, MPU9250_
 	 * 		- 0110: 100 Hz
 	 * @BIT Output Bit Setting: 16-bit output
 	 */
-	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, CNTL, (1 << 4) | 2);
+	writeByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_CNTL, (1 << 4) | 2);
 	HAL_Delay(10);
 
 	/*
@@ -150,6 +149,24 @@ MPU9250_Result_t MPU9250_Init(MPU9250_t *MPU9250, MPU9250_Device_t dev, MPU9250_
 	return MPU9250_RESULT_OK;
 }
 
+HAL_StatusTypeDef whoAmI_Check(MPU9250_t *mpu9250)
+{
+	uint8_t data;
+	/* MPU9250 Who Am I Register Check */
+	if (readByte(&hi2c1, mpu9250 -> I2C_Addr, WHO_AM_I_MPU9250, &data) != HAL_OK)
+	{
+		if (data != 0x71)
+			return HAL_ERROR;
+	}
+	/* AK8963 Who Am I Register Check */
+	/*if (readByte(&hi2c1, mpu9250 -> I2C_Addr_Mag, WIA, &data) != HAL_OK)
+	{
+		if (data != 0x48)
+			return HAL_ERROR;
+	}*/
+	return HAL_OK;
+}
+
 MPU9250_Result_t MPU9250_ReadAcc(MPU9250_t *MPU9250)
 {
 	uint8_t data[6];
@@ -190,11 +207,11 @@ MPU9250_Result_t MPU9250_ReadMag(MPU9250_t *MPU9250)
 	uint8_t check;
 
 	/* Check Mag Data Ready Status */
-	readByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, ST1, &check);
+	readByte(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_ST1, &check);
 
 	if (check & 0x01)
 	{
-		readMultiBytes(&MAG_I2C, MPU9250->I2C_Addr_Mag, HXL, data, 7);
+		readMultiBytes(&MAG_I2C, MPU9250->I2C_Addr_Mag, AK8963_XOUT_L, data, 7);
 		/* Check (ST2 Register) If Magnetic Sensor Overflow Occured */
 		if (!(data[6] & 0x08))
 		{
@@ -334,7 +351,7 @@ void MPU9250_Configure(MPU9250_t *M)
     writeByte(&hi2c1,M->I2C_Addr, SMPLRT_DIV, M->SampleDiv);
 
     /* фильтры */
-    writeByte(&hi2c1,M->I2C_Addr, CONFIG,      M->Gyro_DLPF & 0x07);
+    writeByte(&hi2c1,M->I2C_Addr, MPU_CONFIG,      M->Gyro_DLPF & 0x07);
     writeByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG_2, M->Accel_DLPF & 0x07);
 
     /* FSR */
@@ -342,7 +359,7 @@ void MPU9250_Configure(MPU9250_t *M)
     writeByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG, M->AccelScale);
 
     /* магнитометр */
-    writeByte(&hi2c1,M->I2C_Addr_Mag, CNTL,
+    writeByte(&hi2c1,M->I2C_Addr_Mag, AK8963_CNTL,
               (M->MagScale) | (M->MagMode & 0x0F));
 }
 
@@ -352,19 +369,19 @@ void MPU9250_EnableSelfTest(MPU9250_Backup_t *bk, MPU9250_t *M)
     /* сохранить */
     readByte(&hi2c1,M->I2C_Addr, PWR_MGMT_1, &bk->pwr1);
     readByte(&hi2c1,M->I2C_Addr, PWR_MGMT_2, &bk->pwr2);
-    readByte(&hi2c1,M->I2C_Addr, CONFIG,      &bk->cfg);
+    readByte(&hi2c1,M->I2C_Addr, MPU_CONFIG,      &bk->cfg);
     readByte(&hi2c1,M->I2C_Addr, GYRO_CONFIG, &bk->gcfg);
     readByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG,&bk->acfg);
     readByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG_2,&bk->acfg2);
     readByte(&hi2c1,M->I2C_Addr, SMPLRT_DIV,  &bk->sdiv);
-    readByte(&hi2c1,M->I2C_Addr_Mag, CNTL,    &bk->mag_cntl);
-    readByte(&hi2c1,M->I2C_Addr_Mag, ASTC,    &bk->mag_astc);
+    readByte(&hi2c1,M->I2C_Addr_Mag, AK8963_CNTL,    &bk->mag_cntl);
+    readByte(&hi2c1,M->I2C_Addr_Mag, AK8963_ASTC,    &bk->mag_astc);
 
     /* установить Self-Test биты */
     writeByte(&hi2c1,M->I2C_Addr, GYRO_CONFIG,  bk->gcfg  | 0xE0);
     writeByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG, bk->acfg  | 0xE0);
-    writeByte(&hi2c1,M->I2C_Addr_Mag, ASTC,      0x40);
-    writeByte(&hi2c1,M->I2C_Addr_Mag, CNTL,     (bk->mag_cntl & ~0x0F) | 0x08);
+    writeByte(&hi2c1,M->I2C_Addr_Mag, AK8963_ASTC,      0x40);
+    writeByte(&hi2c1,M->I2C_Addr_Mag, AK8963_CNTL,     (bk->mag_cntl & ~0x0F) | 0x08);
     HAL_Delay(20);
 }
 
@@ -374,13 +391,13 @@ void MPU9250_DisableSelfTest(const MPU9250_Backup_t *bk, MPU9250_t *M)
     /* восстановить */
     writeByte(&hi2c1,M->I2C_Addr, PWR_MGMT_1, bk->pwr1);
     writeByte(&hi2c1,M->I2C_Addr, PWR_MGMT_2, bk->pwr2);
-    writeByte(&hi2c1,M->I2C_Addr, CONFIG,      bk->cfg);
+    writeByte(&hi2c1,M->I2C_Addr, MPU_CONFIG,      bk->cfg);
     writeByte(&hi2c1,M->I2C_Addr, GYRO_CONFIG, bk->gcfg);
     writeByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG,bk->acfg);
     writeByte(&hi2c1,M->I2C_Addr, ACCEL_CONFIG_2,bk->acfg2);
     writeByte(&hi2c1,M->I2C_Addr, SMPLRT_DIV,  bk->sdiv);
-    writeByte(&hi2c1,M->I2C_Addr_Mag, CNTL,    bk->mag_cntl);
-    writeByte(&hi2c1,M->I2C_Addr_Mag, ASTC,    bk->mag_astc);
+    writeByte(&hi2c1,M->I2C_Addr_Mag, AK8963_CNTL,    bk->mag_cntl);
+    writeByte(&hi2c1,M->I2C_Addr_Mag, AK8963_ASTC,    bk->mag_astc);
 }
 
 /* ── усреднение 200 образцов ───────────────────────────────────────── */
@@ -442,27 +459,27 @@ ST_Result MPU9250_SelfTest(MPU9250_t *M)
 static void AK8963_EnableST(MPU9250_Backup_t *bk, MPU9250_t *M)
 {
     /* backup CNTL и ASTC */
-    readByte(&MAG_I2C, M->I2C_Addr_Mag, CNTL, &bk->mag_cntl);
-    readByte(&MAG_I2C, M->I2C_Addr_Mag, ASTC, &bk->mag_astc);
+    readByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_CNTL, &bk->mag_cntl);
+    readByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_ASTC, &bk->mag_astc);
 
     /* Power‑Down */
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, CNTL, 0x00);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_CNTL, 0x00);
     HAL_Delay(1);
 
     /* включить внутренний источник поля */
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, ASTC, 0x40);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_ASTC, 0x40);
 
     /* 16‑bit + Self‑Test mode (BIT=1, MODE=1000b) -> 0x18 */
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, CNTL, 0x18);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_CNTL, 0x18);
 }
 
 static void AK8963_DisableST(const MPU9250_Backup_t *bk, MPU9250_t *M)
 {
     /* Power‑Down и вернуть сохранённые биты */
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, CNTL, 0x00);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_CNTL, 0x00);
     HAL_Delay(1);
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, ASTC, bk->mag_astc);
-    writeByte(&MAG_I2C, M->I2C_Addr_Mag, CNTL, bk->mag_cntl);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_ASTC, bk->mag_astc);
+    writeByte(&MAG_I2C, M->I2C_Addr_Mag, AK8963_CNTL, bk->mag_cntl);
 }
 
 /* ===== ожидание DRDY с тайм‑аутом =================================== */
@@ -473,7 +490,7 @@ static HAL_StatusTypeDef AK8963_WaitDRDY(uint8_t devAddr, uint32_t tout_ms)
 
     while ((HAL_GetTick() - start) < tout_ms)
     {
-        if (readByte(&hi2c1, devAddr, ST1, &st1) != HAL_OK)
+        if (readByte(&hi2c1, devAddr, AK8963_ST1, &st1) != HAL_OK)
             return HAL_ERROR;
 
         if (st1 & 0x01)                          /* DRDY ? */
@@ -499,7 +516,7 @@ ST_Result MPU9250_MagSelfTest(MPU9250_t *M)
         return ST_FAIL;       
     }
 
-    if (readMultiBytes(&MAG_I2C, M->I2C_Addr_Mag, HXL, buf, 7) != HAL_OK)
+    if (readMultiBytes(&MAG_I2C, M->I2C_Addr_Mag, AK8963_XOUT_L, buf, 7) != HAL_OK)
     {
         AK8963_DisableST(&bk, M);
         return ST_FAIL;

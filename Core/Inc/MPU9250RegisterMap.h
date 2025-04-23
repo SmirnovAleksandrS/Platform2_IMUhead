@@ -51,7 +51,7 @@
 #define MPU_CONFIG           0x1A
 #define GYRO_CONFIG      0x1B
 #define ACCEL_CONFIG     0x1C
-#define ACCEL_CONFIG2    0x1D
+#define ACCEL_CONFIG_2    0x1D
 #define LP_ACCEL_ODR     0x1E
 #define WOM_THR          0x1F
 
