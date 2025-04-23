@@ -98,7 +98,6 @@ uint_least32_t Crc32(unsigned char *buf, size_t len)
 
     return crc ^ 0xFFFFFFFFUL;
 }
-/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -329,14 +328,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
