@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
@@ -15,24 +14,12 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "main.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-#include "MPU9250.h"
-
-#include "QMC5883.h"
-
-#include <string.h>
-#include <stdio.h>
-
 
 #ifdef __cplusplus
 }
@@ -41,68 +28,21 @@ extern "C" {
 uint8_t isDeviceConnected = 0;
 
 I2C_HandleTypeDef hi2c1;
-UART_HandleTypeDef huart2;
 I2C_HandleTypeDef hi2c2;
+UART_HandleTypeDef huart2;
 
-MPU9250_t mpu9250;
-
-float Compas_Value;
-
-char data_buf[50];
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C2_Init(void);
-/* USER CODE BEGIN PFP */
-HAL_StatusTypeDef whoAmI_Check(MPU9250_t *mpu9250);
-/* USER CODE END PFP */
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-union variables
-{
-  uint8_t u8[2];
-  uint16_t u16;
-} buf_var;
-
-union crc
-{
-  uint8_t u8[4];
-  uint32_t u32;
-} crc_var;
 
 uint8_t result_buffer[23];
 
-uint_least32_t Crc32(unsigned char *buf, size_t len)
-{
-    uint_least32_t crc_table[256];
-    uint_least32_t crc; int i, j;
+MPU9250_t mpu9250;
+QMC_t pusula_sensor;
 
-    for (i = 0; i < 256; i++)
-    {
-        crc = i;
-        for (j = 0; j < 8; j++)
-            crc = crc & 1 ? (crc >> 1) ^ 0xEDB88320UL : crc >> 1;
-
-        crc_table[i] = crc;
-    };
-
-    crc = 0xFFFFFFFFUL;
-
-    while (len--)
-        crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
-
-    return crc ^ 0xFFFFFFFFUL;
-}
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
   HAL_Init();
@@ -116,55 +56,48 @@ int main(void)
   MX_I2C2_Init();
   MX_USART2_UART_Init();
 
-  // QMC_init(&pusula_sensor, &hi2c2, 200);
+  QMC_init(&pusula_sensor, &hi2c2, 200);
   uint8_t i = 0;
   MPU9250_Init(&mpu9250, MPU9250_Device_0, ACCEL_SCALE_2G, GYRO_SCALE_2000dps, MAG_SCALE_16bit);
 
   while (1)
   {
-    // QMC_read(&pusula_sensor);
-    MPU9250_ReadGyro(&mpu9250);
-    MPU9250_ReadAcc(&mpu9250);
-
-    result_buffer[0] = 0x7E;
-    for(i = 0; i < 3; i++)
-    {
-      buf_var.u16 = mpu9250.acc_raw[i];
-      result_buffer[i*2 + 1] = buf_var.u8[0];
-      result_buffer[i*2 + 2] = buf_var.u8[1];
-    }
-
-    for(i = 0; i < 3; i++)
-    {
-      buf_var.u16 = mpu9250.gyro_raw[i];
-      result_buffer[i*2 + 7] = buf_var.u8[0];
-      result_buffer[i*2 + 8] = buf_var.u8[1];
-    }
-
-    ST_Result res_st = MPU9250_SelfTest(&mpu9250);
-    if(res_st == ST_PASS)
-      result_buffer [21] = 1;
     
-    res_st = MPU9250_MagSelfTest(&mpu9250);
-    if(res_st == ST_PASS)
-      result_buffer [22] = 1;
-    // buf_var.u16 = pusula_sensor.Xaxis;
-    // result_buffer[13] = buf_var.u8[0];
-    // result_buffer[14] = buf_var.u8[1];
-    // buf_var.u16 = pusula_sensor.Yaxis;
-    // result_buffer[15] = buf_var.u8[0];
-    // result_buffer[16] = buf_var.u8[1];
-    // buf_var.u16 = pusula_sensor.Zaxis;
-    // result_buffer[17] = buf_var.u8[0];
-    // result_buffer[18] = buf_var.u8[1];
+    // MPU9250_ReadGyro(&mpu9250);
+    // MPU9250_ReadAcc(&mpu9250);
 
-    // crc_var.u32 = Crc32(result_buffer, 19);
+    // result_buffer[0] = 0x7E;
+    // IPUART_sendData(1, result_buffer);
+    // IPUART_send3u16(0xA, 0xB, 0xC);
+    // for(i = 0; i < 3; i++)
+    // {
+    //   buf_var.u16 = mpu9250.acc_raw[i];
+    //   result_buffer[i*2 + 1] = buf_var.u8[0];
+    //   result_buffer[i*2 + 2] = buf_var.u8[1];
+    // }
 
-    // result_buffer[19] = crc_var.u8[0];
-    // result_buffer[20] = crc_var.u8[1];
-    // result_buffer[21] = crc_var.u8[2];
-    // result_buffer[22] = crc_var.u8[3];
-    HAL_UART_Transmit(&huart2, result_buffer, 23, 100);
+    // for(i = 0; i < 3; i++)
+    // {
+    //   buf_var.u16 = mpu9250.gyro_raw[i];
+    //   result_buffer[i*2 + 7] = buf_var.u8[0];
+    //   result_buffer[i*2 + 8] = buf_var.u8[1];
+    // }
+
+    // ST_Result res_st = MPU9250_SelfTest(&mpu9250);
+    // if(res_st == ST_PASS)
+    //   result_buffer [21] = 1;
+    
+    // res_st = MPU9250_MagSelfTest(&mpu9250);
+    // if(res_st == ST_PASS)
+    //   result_buffer [22] = 1;
+
+    QMC_read(&pusula_sensor);
+
+    uint16_t x = pusula_sensor.Xaxis;
+    uint16_t y = pusula_sensor.Yaxis;
+    uint16_t z = pusula_sensor.Zaxis;
+    IPUART_send3u16(x, y, z);
+
     HAL_Delay(50);
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
