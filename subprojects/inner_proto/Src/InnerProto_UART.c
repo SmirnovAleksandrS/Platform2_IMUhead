@@ -34,7 +34,7 @@ HAL_StatusTypeDef IPUART_sendData(uint8_t length, uint8_t* data, uint8_t type){
     return HAL_UART_Transmit(&huart2, buffer, length + 7, HAL_UART_TIMEOUT);
 }
 
-HAL_StatusTypeDef IPUART_send3u16(uint16_t x, uint16_t y, uint16_t z){
+HAL_StatusTypeDef IPUART_send3u16(uint16_t x, uint16_t y, uint16_t z, uint8_t type){
     union u16_to_u8 transform;
     uint8_t buffer[6];
 
@@ -44,5 +44,5 @@ HAL_StatusTypeDef IPUART_send3u16(uint16_t x, uint16_t y, uint16_t z){
     memcpy(buffer + 2, transform.u8, 2);
     transform.u16 = z;
     memcpy(buffer + 4, transform.u8, 2);
-    return IPUART_sendData(6, buffer, THREAXIS_DATA_TYPE);
+    return IPUART_sendData(6, buffer, type);
 }

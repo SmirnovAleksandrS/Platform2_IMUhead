@@ -96,7 +96,7 @@ int main(void)
     uint16_t x = pusula_sensor.Xaxis;
     uint16_t y = pusula_sensor.Yaxis;
     uint16_t z = pusula_sensor.Zaxis;
-    IPUART_send3u16(x, y, z);
+    IPUART_send3u16(x, y, z, MAG_DATA_TYPE);
 
     HAL_Delay(50);
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
