@@ -15,10 +15,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3   # забираем код из репо
 
-      - name: Install ARM GCC Toolchain
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-arm-none-eabi make cmake
+      - name: Setup Arm GNU Toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '14.2.0'   # укажите вашу версию
+      # теперь arm-none-eabi-* уже в PATH
 
       - name: Build project
         run: |
