@@ -27,7 +27,14 @@ jobs:
           which cc
           cc --version
 
+      - name: Sanity checks
+        run: |
+          echo "CC in Makefile (first):"
+          grep -n '^[[:space:]]*CC[[:space:]]*[:?]*=' -n Makefile STM32Make.make || true
+          echo "Hardcoded cc usages:"
+          grep -nE '(^|[[:space:]])cc([[:space:]]|$)' STM32Make.make || true
+
       - name: Build project
         run: |
           make clean
-          make  -j16 DEBUG=0 -f STM32Make.make
+          make -rR -j16 DEBUG=0 -f STM32Make.make
