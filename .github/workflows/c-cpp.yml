@@ -1,0 +1,26 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3   # забираем код из репо
+
+      - name: Install ARM GCC Toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-none-eabi make cmake
+
+      - name: Build project
+        run: |
+          make clean
+          make all
