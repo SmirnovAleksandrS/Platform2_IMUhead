@@ -20,6 +20,12 @@ jobs:
         with:
           release: '14.2.Rel1'   # укажите вашу версию
       # теперь arm-none-eabi-* уже в PATH
+      - name: Show toolchain
+        run: |
+          which arm-none-eabi-gcc || true
+          arm-none-eabi-gcc --version || true
+          which cc
+          cc --version
 
       - name: Build project
         run: |
