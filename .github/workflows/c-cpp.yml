@@ -23,4 +23,4 @@ jobs:
       - name: Build project
         run: |
           make clean
-          make all
+          make  -j16 DEBUG=0 -f STM32Make.make
