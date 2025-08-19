@@ -18,7 +18,7 @@ jobs:
       - name: Setup Arm GNU Toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          release: '14.2.0'   # укажите вашу версию
+          release: '14.2.Rel1'   # укажите вашу версию
       # теперь arm-none-eabi-* уже в PATH
 
       - name: Build project
