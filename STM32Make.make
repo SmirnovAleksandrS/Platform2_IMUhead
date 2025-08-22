@@ -126,7 +126,7 @@ ifdef ARM_GCC_PATH
     DP = $(PREFIX)$(ARM_GCC_PATH)/$(ARM_PREFIX)objdump$(POSTFIX)
 else
   CC ?= $(ARM_PREFIX)gcc
-  CXX ?= $(ARM_PREFIX)g++$
+  CXX ?= $(ARM_PREFIX)g++
   AS ?= $(ARM_PREFIX)gcc -x assembler-with-cpp
   CP ?= $(ARM_PREFIX)objcopy
   SZ ?= $(ARM_PREFIX)size
