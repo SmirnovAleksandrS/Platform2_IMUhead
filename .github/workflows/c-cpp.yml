@@ -36,5 +36,5 @@ jobs:
 
       - name: Build project
         run: |
-          make clean
-          make -rR -j16 DEBUG=0 -f STM32Make.make
+          ./configure.py
+          ./build.py
