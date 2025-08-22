@@ -1,0 +1,22 @@
+{
+  "libs": {
+    "inner_proto": {
+      "name": "INNER_PROTO",
+      "url": "https://github.com/SmirnovAleksandrS/Platform2_InnerProto",
+      "rev": "main",
+      "dst": "submodules/inner-proto"
+    },
+    "mpu9250_lib": {
+      "name": "MPU9250_LIB",
+      "url": "https://github.com/SmirnovAleksandrS/Platform2_MPU9250.git",
+      "rev": "main",
+      "dst": "submodules/mpu9250-lib"
+    },
+    "qmc5883_lib": {
+      "name": "QMC5883_LIB",
+      "url": "https://github.com/SmirnovAleksandrS/Platform2_QMC5883",
+      "rev": "main",
+      "dst": "submodules/qmc5883-lib"
+    }
+  }
+}

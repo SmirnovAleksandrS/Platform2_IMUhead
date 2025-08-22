@@ -94,10 +94,7 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
-subprojects/inner_proto/Src/InnerProto_UART.c \
-subprojects/mpu9250_lib/Src/MPU9250.c \
-subprojects/qmc5883/Src/QMC5883.c
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c
 
 
 CXX_SOURCES = \
@@ -129,7 +126,7 @@ ifdef ARM_GCC_PATH
     DP = $(PREFIX)$(ARM_GCC_PATH)/$(ARM_PREFIX)objdump$(POSTFIX)
 else
   CC ?= $(ARM_PREFIX)gcc
-  CXX ?= $(ARM_PREFIX)g++
+  CXX ?= $(ARM_PREFIX)g++$
   AS ?= $(ARM_PREFIX)gcc -x assembler-with-cpp
   CP ?= $(ARM_PREFIX)objcopy
   SZ ?= $(ARM_PREFIX)size
@@ -195,10 +192,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
--IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--Isubprojects/inner_proto/Inc \
--Isubprojects/mpu9250_lib/Inc \
--Isubprojects/qmc5883/Inc
+-IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy
 
 
 
@@ -239,6 +233,16 @@ LIBDIR = \
 ADDITIONALLDFLAGS = -Wl,--print-memory-usage -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIRECTORY)/$(TARGET).map,--cref -Wl,--gc-sections
+
+# --- third-party (must come after base C_* assignments, before OBJECTS/vpath) ---
+-include generated/third_party.mk
+# -------------------------------------------------------------------------------
+# --- third-party (after base C_*; before OBJECTS/vpath) ---
+-include generated/third_party.mk
+$(info TRY include $(INNER_PROTO_DIR)/export.mk -> $(wildcard $(INNER_PROTO_DIR)/export.mk))
+$(info TRY include $(MPU9250_LIB_DIR)/export.mk -> $(wildcard $(MPU9250_LIB_DIR)/export.mk))
+$(info TRY include $(QMC5883_LIB_DIR)/export.mk -> $(wildcard $(QMC5883_LIB_DIR)/export.mk))
+# -----------------------------------------------------------
 
 #######################################
 # build the application
@@ -348,7 +352,24 @@ clean:
 # custom makefile rules
 #######################################
 
-	
+.PHONY: after-vars
+after-vars:
+	@echo "C_INCLUDES = $(C_INCLUDES)"
+	@echo "C_SOURCES  = $(C_SOURCES)"
+
+.PHONY: show-libs
+show-libs:
+	@echo "INNER_PROTO_DIR = '$(INNER_PROTO_DIR)'"
+	@echo "MPU9250_LIB_DIR = '$(MPU9250_LIB_DIR)'"
+	@echo "QMC5883_LIB_DIR = '$(QMC5883_LIB_DIR)'"
+	@echo "INNER_PROTO export.mk exists? $(wildcard $(INNER_PROTO_DIR)/export.mk)"
+	@echo "MPU9250_LIB export.mk exists? $(wildcard $(MPU9250_LIB_DIR)/export.mk)"
+	@echo "QMC5883_LIB export.mk exists? $(wildcard $(QMC5883_LIB_DIR)/export.mk)"
+
+.PHONY: mf
+mf:
+	@printf '*** MAKEFILE_LIST ***\n'
+	@printf '%s\n' $(MAKEFILE_LIST)
 #######################################
 # dependencies
 #######################################

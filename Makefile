@@ -39,8 +39,6 @@ C_SOURCES =  \
 Core/Src/main.cpp \
 Core/Src/stm32f1xx_it.c \
 Core/Src/stm32f1xx_hal_msp.c \
-Core/Src/MPU9250.c\ \
-Core/Src/QMC5883.c\ \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
@@ -58,9 +56,12 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Core/Src/system_stm32f1xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
-Core/Src/main.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
-subprojects/*/Src/*
+# subprojects/*/Src/*
+# Core/Src/MPU9250.c\ \
+# Core/Src/QMC5883.c\ \
+# Core/Src/main.c \
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -69,7 +70,6 @@ startup_stm32f103xb.s
 # ASM sources
 ASMM_SOURCES = 
 
-
 #######################################
 # binaries
 #######################################
@@ -77,8 +77,8 @@ PREFIX = arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
-AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
+CC = $(GCC_PATH)/$(PREFIX)g++
+AS = $(GCC_PATH)/$(PREFIX)g++ -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 else
@@ -125,7 +125,7 @@ C_INCLUDES =  \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
--Isubprojects/*/Inc/*
+# -Isubprojects/*/Inc/*
 
 
 # compile gcc flags
@@ -200,5 +200,6 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
+
 
 # *** EOF ***
